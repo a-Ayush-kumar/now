@@ -1,36 +1,50 @@
+// lib/axios.ts
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 
-// 1. Define Request/Response Type Interfaces
-interface AskRequest {
-  url: string | string[]; // Handles single URL or up to 3 URLs
+// 1. Structured Chat Message Entry Type
+export interface ChatMessage {
+  role: 'user' | 'agent';
+  text: string;
+}
+
+// 2. Exact Payload Structure expected by FastAPI Pydantic validation schema
+interface AskRequestPayload {
+  url: string | string[];
   question: string;
+  session_id: string;
+  history: ChatMessage[];
 }
 
 interface ApiResponse<T = Record<string, unknown>> {
   success: boolean;
+  answer?: string; // Explicitly map answer parameter returned by server
   data?: T;
   error?: string;
 }
 
-// 2. Initialize Typed Axios Instance
+// Initialize Global Instance
 const API: AxiosInstance = axios.create({
   baseURL: 'http://127.0.0.1:8000',
   headers: { 'Content-Type': 'application/json' },
 });
 
 /**
- * 3. Query Multi-Video Context
- * Accepts a single URL string OR an array of up to 3 URLs
+ * Executes a structured multi-turn query across video vector embeddings
  */
 export const askQuestion = async (
-  urls: string | string[], 
-  question: string
+  urls: string | string[],
+  question: string,
+  sessionId: string,
+  history: ChatMessage[]
 ): Promise<ApiResponse> => {
   try {
     const response: AxiosResponse<ApiResponse> = await API.post('/ask', {
       url: urls,
-      question
-    } as AskRequest);
+      question: question,
+      session_id: sessionId,
+      history: history, // Passes native structured array data down the pipe
+    } as AskRequestPayload);
+    
     return response.data;
   } catch (err: unknown) {
     const errorMessage = axios.isAxiosError(err)
@@ -38,14 +52,13 @@ export const askQuestion = async (
       : err instanceof Error
       ? err.message
       : String(err);
-    console.error("/ask failed:", errorMessage);
+    console.error("/ask call transaction aborted:", errorMessage);
     throw err;
   }
 };
 
 /**
- * 4. Trigger Video Ingestion Pipeline
- * Processes the media, extracts audio, and indexes vector store
+ * Triggers video processing and indexing manually if needed
  */
 export const generateTranscript = async (
   videoUrl: string
@@ -61,7 +74,7 @@ export const generateTranscript = async (
       : err instanceof Error
       ? err.message
       : String(err);
-    console.error("❌ /transcript failed:", errorMessage);
+    console.error("/transcript failed:", errorMessage);
     throw err;
   }
 };
