@@ -1,0 +1,29 @@
+# Web framework stack
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+
+# LangChain ecosystem
+langchain>=0.1.0
+langchain-core>=0.1.0
+langchain-community>=0.0.20
+langchain-google-genai>=1.0.0
+
+# Vector database
+chromadb>=0.4.24
+
+# Google GenAI ecosystem
+google-genai>=0.1.0
+google-auth>=2.28.0
+
+# Transcription stack
+youtube-transcript-api>=0.6.2
+yt-dlp>=2024.3.10
+faster-whisper==1.2.1
+
+# Environment variables
+python-dotenv>=1.0.1
+
+# Utilities
+pydantic>=2.6.0
+requests>=2.31.0
+aiofiles>=23.2.1
